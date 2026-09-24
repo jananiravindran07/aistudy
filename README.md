@@ -112,6 +112,13 @@ Generate the Prisma client after schema changes:
 npx prisma generate && npx prisma migrate dev --name <name>
 ```
 
+## 🌍 Deploying
+
+See **[DEPLOYMENT.md](DEPLOYMENT.md)** for step-by-step production guides:
+Vercel + managed Postgres (recommended), Docker on a VPS, or Railway/Render.
+Your live instance needs `DATABASE_URL`, `JWT_SECRET`, and (for real AI)
+`OPENAI_API_KEY` — everything else has defaults.
+
 ## 🧭 Project structure
 
 ```
