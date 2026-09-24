@@ -1,8 +1,8 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f8fafc;
+  --foreground: #0f172a;
 }
 
 @theme inline {
@@ -12,15 +12,95 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+}
+
+/* ---------- Chat bubble / prose polish ---------- */
+
+.prose-md h1,
+.prose-md h2,
+.prose-md h3 {
+  font-weight: 650;
+  line-height: 1.25;
+  margin-top: 0.9em;
+  margin-bottom: 0.4em;
+}
+.prose-md h1 { font-size: 1.25rem; }
+.prose-md h2 { font-size: 1.05rem; }
+.prose-md h3 { font-size: 0.95rem; }
+.prose-md p { margin: 0.4em 0; line-height: 1.6; }
+.prose-md ul, .prose-md ol { margin: 0.4em 0 0.4em 1.25em; display: flex; flex-direction: column; gap: 0.15em; }
+.prose-md ul { list-style: disc; }
+.prose-md ol { list-style: decimal; }
+.prose-md code {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.85em;
+  background: rgba(15, 23, 42, 0.07);
+  padding: 0.1em 0.35em;
+  border-radius: 0.25rem;
+}
+.prose-md pre {
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+  margin: 0.6em 0;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+.prose-md pre code { background: transparent; padding: 0; color: inherit; }
+.prose-md blockquote {
+  border-left: 3px solid #c7d2fe;
+  padding-left: 0.75rem;
+  margin: 0.5em 0;
+  color: #475569;
+}
+.prose-md a { color: #4f46e5; text-decoration: underline; }
+.prose-md hr { margin: 1em 0; border-color: #e2e8f0; }
+
+/* ---------- Printing (bonus: export as PDF via browser print) ---------- */
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: #ffffff !important;
+  }
+  .print-area {
+    box-shadow: none !important;
+    border: none !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+  .print-break-before {
+    break-before: page;
+  }
+}
+
+/* ---------- Scrollbars ---------- */
+
+.thin-scroll::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.thin-scroll::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+.thin-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in-up {
+  animation: fade-in-up 0.25s ease-out both;
 }
