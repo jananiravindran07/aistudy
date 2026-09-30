@@ -1,4 +1,5 @@
 import { GoogleGenAI } from '@google/genai';
+import OpenAI from 'openai';
 import { z } from 'zod';
 
 export type Difficulty = 'Beginner' | 'Intermediate' | 'Advanced';
@@ -17,6 +18,7 @@ interface Provider {
 
 const configuredModel = process.env.MODEL_NAME?.trim();
 const MODEL = !configuredModel || configuredModel === 'gemini-2.5-flash' ? 'gemini-3.8-flash' : configuredModel;
+const OPENAI_MODEL = process.env.OPENAI_MODEL?.trim() || 'gpt-4o-mini';
 const quizSchema = z.object({
   questions: z.array(z.object({
     question: z.string().trim().min(1),
@@ -43,9 +45,29 @@ const geminiProvider: Provider = {
   },
 };
 
+const openaiProvider: Provider = {
+  async generate(systemInstruction, prompt) {
+    const apiKey = process.env.OPENAI_API_KEY;
+    if (!apiKey) throw new Error('OPENAI_API_KEY is not configured');
+
+    const client = new OpenAI({ apiKey });
+    const response = await client.chat.completions.create({
+      model: OPENAI_MODEL,
+      messages: [
+        { role: 'system', content: systemInstruction },
+        { role: 'user', content: prompt },
+      ],
+      temperature: 0.65,
+    });
+    return response.choices[0]?.message.content ?? '';
+  },
+};
+
 const getProvider = (): Provider => {
-  const providerName = process.env.LLM_PROVIDER ?? 'gemini';
+  const providerName = process.env.LLM_PROVIDER?.trim()
+    ?? (process.env.GEMINI_API_KEY ? 'gemini' : process.env.OPENAI_API_KEY ? 'openai' : 'gemini');
   if (providerName === 'gemini') return geminiProvider;
+  if (providerName === 'openai') return openaiProvider;
   throw new Error(`Unsupported LLM_PROVIDER: ${providerName}`);
 };
 

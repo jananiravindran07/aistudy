@@ -1,10 +1,17 @@
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
 generator client {
   provider = "prisma-client-js"
+}
+
+enum MessageRole {
+  user
+  assistant
+
+  @@map("CapybaraMessageRole")
 }
 
 model User {
@@ -28,6 +35,8 @@ model User {
   tasks         Task[]
   sessions      StudySession[]
   capybaraState CapybaraState?
+
+  @@map("CapybaraUser")
 }
 
 model Conversation {
@@ -35,18 +44,27 @@ model Conversation {
   title     String
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
+  topic     String    @default("General")
+  difficulty String   @default("Intermediate")
   userId    String
   user      User      @relation(fields: [userId], references: [id])
   messages  Message[]
+  notes     Note[]
+  quizzes   Quiz[]
+  studyPlans StudyPlan[]
+
+  @@map("CapybaraConversation")
 }
 
 model Message {
   id             String       @id @default(uuid())
   content        String
-  role           String       // "user" or "assistant"
+  role           MessageRole
   createdAt      DateTime     @default(now())
   conversationId String
   conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@map("CapybaraMessage")
 }
 
 model Document {
@@ -56,6 +74,8 @@ model Document {
   createdAt DateTime @default(now())
   userId    String
   user      User     @relation(fields: [userId], references: [id])
+
+  @@map("CapybaraDocument")
 }
 
 model StudySession {
@@ -65,34 +85,48 @@ model StudySession {
   completedAt DateTime @default(now())
   userId      String
   user        User     @relation(fields: [userId], references: [id])
+
+  @@map("CapybaraStudySession")
 }
 
 model Note {
   id        String   @id @default(uuid())
   title     String
   content   String
+  conversationId String
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   userId    String
   user      User     @relation(fields: [userId], references: [id])
+
+  @@map("CapybaraNote")
 }
 
 model Quiz {
   id        String   @id @default(uuid())
   title     String
-  questions String
+  questions Json
+  conversationId String
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
   userId    String
   user      User     @relation(fields: [userId], references: [id])
+
+  @@map("CapybaraQuiz")
 }
 
 model StudyPlan {
   id        String   @id @default(uuid())
   title     String
-  content   String
+  content   Json
+  conversationId String
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
   userId    String
   user      User     @relation(fields: [userId], references: [id])
+
+  @@map("CapybaraStudyPlan")
 }
 
 model Task {
@@ -103,6 +137,8 @@ model Task {
   createdAt   DateTime  @default(now())
   userId      String
   user        User      @relation(fields: [userId], references: [id])
+
+  @@map("CapybaraTask")
 }
 
 model CapybaraState {
@@ -115,4 +151,6 @@ model CapybaraState {
   updatedAt   DateTime @updatedAt
   userId      String   @unique
   user        User     @relation(fields: [userId], references: [id])
+
+  @@map("CapybaraPetState")
 }

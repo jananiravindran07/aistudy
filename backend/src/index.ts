@@ -358,18 +358,39 @@ app.post('/api/documents/:id/ask', authenticate, studyLimiter, async (req, res) 
       data: { content: typeof result === 'string' ? result : JSON.stringify(result), role: 'assistant', conversationId: conversation.id },
     });
     if (parsed.data.mode === 'notes' && typeof result === 'string') {
-      await prisma.note.create({ data: { title: document.title, content: result, userId: res.locals.userId } });
+      await prisma.note.create({
+        data: {
+          title: document.title,
+          content: result,
+          user: { connect: { id: res.locals.userId } },
+          conversation: { connect: { id: conversation.id } },
+        },
+      });
     } else if (parsed.data.mode === 'quiz') {
-      await prisma.quiz.create({ data: { title: document.title, questions: JSON.stringify(result), userId: res.locals.userId } });
+      await prisma.quiz.create({
+        data: {
+          title: document.title,
+          questions: JSON.stringify(result) as Prisma.InputJsonValue,
+          user: { connect: { id: res.locals.userId } },
+          conversation: { connect: { id: conversation.id } },
+        },
+      });
     } else if (parsed.data.mode === 'plan' && typeof result === 'string') {
-      await prisma.studyPlan.create({ data: { title: document.title, content: result, userId: res.locals.userId } });
+      await prisma.studyPlan.create({
+        data: {
+          title: document.title,
+          content: result,
+          user: { connect: { id: res.locals.userId } },
+          conversation: { connect: { id: conversation.id } },
+        },
+      });
     }
     await prisma.conversation.update({ where: { id: conversation.id }, data: { updatedAt: new Date() } });
     return res.json({ result, conversationId: conversation.id, messages: [userMessage, assistantMessage] });
   } catch (error) {
     console.error('Document study failed:', error);
-    if (error instanceof Error && error.message.includes('GEMINI_API_KEY is not configured')) {
-      return res.status(503).json({ error: 'AI service is not configured. Add GEMINI_API_KEY to the backend environment.' });
+    if (error instanceof Error && (error.message.includes('GEMINI_API_KEY is not configured') || error.message.includes('OPENAI_API_KEY is not configured'))) {
+      return res.status(503).json({ error: 'AI service is not configured. Add GEMINI_API_KEY or OPENAI_API_KEY to the server environment.' });
     }
     return res.status(502).json({ error: 'Document study could not be generated. Please try again.' });
   }
@@ -433,18 +454,39 @@ app.post('/api/study', authenticate, studyLimiter, async (req, res) => {
       },
     });
     if (parsed.data.mode === 'notes' && typeof result === 'string') {
-      await prisma.note.create({ data: { title, content: result, userId: res.locals.userId } });
+      await prisma.note.create({
+        data: {
+          title,
+          content: result,
+          user: { connect: { id: res.locals.userId } },
+          conversation: { connect: { id: conversation.id } },
+        },
+      });
     } else if (parsed.data.mode === 'quiz') {
-      await prisma.quiz.create({ data: { title, questions: JSON.stringify(result), userId: res.locals.userId } });
+      await prisma.quiz.create({
+        data: {
+          title,
+          questions: JSON.stringify(result) as Prisma.InputJsonValue,
+          user: { connect: { id: res.locals.userId } },
+          conversation: { connect: { id: conversation.id } },
+        },
+      });
     } else if (parsed.data.mode === 'plan' && typeof result === 'string') {
-      await prisma.studyPlan.create({ data: { title, content: result, userId: res.locals.userId } });
+      await prisma.studyPlan.create({
+        data: {
+          title,
+          content: result,
+          user: { connect: { id: res.locals.userId } },
+          conversation: { connect: { id: conversation.id } },
+        },
+      });
     }
     await prisma.conversation.update({ where: { id: conversation.id }, data: { updatedAt: new Date() } });
     return res.json({ result, conversationId: conversation.id, messages: [userMessage, assistantMessage] });
   } catch (error) {
     console.error('Study route failed:', error);
-    if (error instanceof Error && error.message.includes('GEMINI_API_KEY is not configured')) {
-      return res.status(503).json({ error: 'AI service is not configured. Add GEMINI_API_KEY to the backend environment.' });
+    if (error instanceof Error && (error.message.includes('GEMINI_API_KEY is not configured') || error.message.includes('OPENAI_API_KEY is not configured'))) {
+      return res.status(503).json({ error: 'AI service is not configured. Add GEMINI_API_KEY or OPENAI_API_KEY to the server environment.' });
     }
     return res.status(502).json({ error: 'Study content could not be generated. Please try again.' });
   }
@@ -613,6 +655,10 @@ app.get('/api/capybara', authenticate, async (_req, res) => {
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-});
+export default app;
+
+if (process.env.VERCEL !== '1') {
+  app.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}`);
+  });
+}
