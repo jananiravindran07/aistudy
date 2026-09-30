@@ -17,6 +17,7 @@ import { generateStudyContent } from './services/llm';
 dotenv.config();
 
 const app = express();
+if (process.env.VERCEL === '1') app.set('trust proxy', 1);
 const prisma = new PrismaClient();
 const PORT = Number(process.env.PORT ?? 5000);
 const production = process.env.NODE_ENV === 'production';
@@ -111,6 +112,8 @@ const publicUser = (user: { id: string; email: string; name: string | null; carr
   happiness: user.happiness,
   level: user.level,
 });
+const hasExhaustedAiCredits = (error: unknown) => error instanceof Error
+  && /credit_balance_exhausted|insufficient_quota|no credits remaining/i.test(error.message);
 const rewardCarrots = async (transaction: Prisma.TransactionClient, userId: string, amount: number) => {
   const user = await transaction.user.update({
     where: { id: userId },
@@ -392,6 +395,9 @@ app.post('/api/documents/:id/ask', authenticate, studyLimiter, async (req, res) 
     if (error instanceof Error && (error.message.includes('GEMINI_API_KEY is not configured') || error.message.includes('OPENAI_API_KEY is not configured'))) {
       return res.status(503).json({ error: 'AI service is not configured. Add GEMINI_API_KEY or OPENAI_API_KEY to the server environment.' });
     }
+    if (hasExhaustedAiCredits(error)) {
+      return res.status(503).json({ error: 'AI provider credits are exhausted. Add API credits or configure a Gemini key with available quota.' });
+    }
     return res.status(502).json({ error: 'Document study could not be generated. Please try again.' });
   }
 });
@@ -487,6 +493,9 @@ app.post('/api/study', authenticate, studyLimiter, async (req, res) => {
     console.error('Study route failed:', error);
     if (error instanceof Error && (error.message.includes('GEMINI_API_KEY is not configured') || error.message.includes('OPENAI_API_KEY is not configured'))) {
       return res.status(503).json({ error: 'AI service is not configured. Add GEMINI_API_KEY or OPENAI_API_KEY to the server environment.' });
+    }
+    if (hasExhaustedAiCredits(error)) {
+      return res.status(503).json({ error: 'AI provider credits are exhausted. Add API credits or configure a Gemini key with available quota.' });
     }
     return res.status(502).json({ error: 'Study content could not be generated. Please try again.' });
   }

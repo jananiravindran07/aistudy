@@ -45,6 +45,10 @@ export default function Timer({ onMoodChange }: { onMoodChange?: (mood: Capybara
   const [notice, setNotice] = useState('');
   const completionStarted = useRef(false);
 
+  useEffect(() => {
+    if (snapshot.isActive && mode === 'work') onMoodChange?.('studying');
+  }, [snapshot.isActive, mode, onMoodChange]);
+
   const handleComplete = useEffectEvent(async () => {
     if (completionStarted.current) return;
     completionStarted.current = true;
