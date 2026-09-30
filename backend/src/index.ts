@@ -114,6 +114,10 @@ const publicUser = (user: { id: string; email: string; name: string | null; carr
 });
 const hasExhaustedAiCredits = (error: unknown) => error instanceof Error
   && /credit_balance_exhausted|insufficient_quota|no credits remaining/i.test(error.message);
+const isAiTemporarilyUnavailable = (error: unknown) => typeof error === 'object'
+  && error !== null
+  && 'status' in error
+  && error.status === 503;
 const rewardCarrots = async (transaction: Prisma.TransactionClient, userId: string, amount: number) => {
   const user = await transaction.user.update({
     where: { id: userId },
@@ -398,6 +402,9 @@ app.post('/api/documents/:id/ask', authenticate, studyLimiter, async (req, res) 
     if (hasExhaustedAiCredits(error)) {
       return res.status(503).json({ error: 'AI provider credits are exhausted. Add API credits or configure a Gemini key with available quota.' });
     }
+    if (isAiTemporarilyUnavailable(error)) {
+      return res.status(503).json({ error: 'Gemini is temporarily busy. Please try again in a moment.' });
+    }
     return res.status(502).json({ error: 'Document study could not be generated. Please try again.' });
   }
 });
@@ -496,6 +503,9 @@ app.post('/api/study', authenticate, studyLimiter, async (req, res) => {
     }
     if (hasExhaustedAiCredits(error)) {
       return res.status(503).json({ error: 'AI provider credits are exhausted. Add API credits or configure a Gemini key with available quota.' });
+    }
+    if (isAiTemporarilyUnavailable(error)) {
+      return res.status(503).json({ error: 'Gemini is temporarily busy. Please try again in a moment.' });
     }
     return res.status(502).json({ error: 'Study content could not be generated. Please try again.' });
   }

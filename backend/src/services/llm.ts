@@ -36,12 +36,21 @@ const geminiProvider: Provider = {
     }
 
     const ai = new GoogleGenAI({ apiKey });
-    const response = await ai.models.generateContent({
-      model: MODEL,
-      contents: prompt,
-      config: { systemInstruction, maxOutputTokens: 3000, temperature: 0.65 },
-    });
-    return response.text ?? '';
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      try {
+        const response = await ai.models.generateContent({
+          model: MODEL,
+          contents: prompt,
+          config: { systemInstruction, maxOutputTokens: 3000, temperature: 0.65 },
+        });
+        return response.text ?? '';
+      } catch (error) {
+        const status = typeof error === 'object' && error !== null && 'status' in error ? error.status : undefined;
+        if (status !== 503 || attempt === 1) throw error;
+        await new Promise((resolve) => setTimeout(resolve, 800));
+      }
+    }
+    return '';
   },
 };
 
