@@ -1,0 +1,93 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    font-family: 'Nunito', sans-serif;
+    color: #654936;
+    background: #fff8ec;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    min-width: 320px;
+    min-height: 100%;
+    background: #fff8ec;
+  }
+
+  body {
+    @apply m-0 min-h-screen bg-pastel-cream font-sans text-pastel-brown antialiased;
+    background-image:
+      radial-gradient(ellipse at 9% 7%, rgba(255, 200, 221, 0.35), transparent 28rem),
+      radial-gradient(ellipse at 94% 25%, rgba(184, 224, 210, 0.42), transparent 30rem),
+      linear-gradient(145deg, #fff8ec 0%, #fffaf3 54%, #f8f4eb 100%);
+    background-attachment: fixed;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display font-bold;
+  }
+
+  button, input {
+    font: inherit;
+  }
+
+  button:focus-visible, a:focus-visible, input:focus-visible {
+    outline: 3px solid #a7663d;
+    outline-offset: 3px;
+  }
+}
+
+@layer components {
+  .card {
+    @apply rounded-2xl border-2 border-white/70 bg-white/75 p-5 shadow-[0_12px_35px_rgba(104,73,47,0.08)] backdrop-blur-md transition-shadow duration-300 sm:p-6;
+  }
+  .btn-primary {
+    @apply rounded-full bg-pastel-orange px-5 py-3 font-extrabold text-white shadow-[0_4px_0_#d88743] transition-all hover:-translate-y-0.5 hover:bg-[#f49b45] active:translate-y-0 active:shadow-none;
+  }
+  .btn-secondary {
+    @apply rounded-full border-2 border-pastel-peach bg-white/80 px-4 py-2 font-bold text-pastel-brown transition-colors hover:bg-pastel-cream active:bg-pastel-peach/50;
+  }
+  .auth-panel {
+    background-image: radial-gradient(ellipse at 96% 0%, rgba(255, 216, 190, 0.38), transparent 15rem);
+  }
+  .auth-kicker {
+    @apply mb-3 inline-flex rounded-full bg-pastel-mint/50 px-3 py-1 text-xs font-extrabold uppercase text-pastel-brown;
+  }
+  .form-label {
+    @apply flex flex-col gap-1.5 text-sm font-extrabold text-pastel-brown;
+  }
+  .form-input {
+    @apply w-full rounded-xl border-2 border-pastel-peach/70 bg-white/85 px-4 py-3 text-base font-semibold text-pastel-brown placeholder:text-pastel-brown/45 focus:border-pastel-orange focus:outline-none;
+  }
+  .form-error {
+    @apply rounded-xl border border-[#d98d78]/50 bg-[#fff0eb] px-3 py-2 text-sm font-bold text-[#8c4131];
+  }
+  .icon-button {
+    @apply grid size-10 shrink-0 place-items-center rounded-full border border-pastel-peach/80 bg-white/75 text-pastel-brown transition-colors hover:bg-pastel-peach/40;
+  }
+  .brand-icon {
+    @apply grid size-9 place-items-center rounded-[13px] bg-pastel-tan text-lg font-black text-white shadow-[0_3px_0_#b68655];
+    font-family: 'Quicksand', sans-serif;
+  }
+  .page-loading {
+    @apply mx-auto mt-16 max-w-md rounded-2xl border-2 border-white/80 bg-white/75 p-8 text-center font-bold text-pastel-brown shadow-lg;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
